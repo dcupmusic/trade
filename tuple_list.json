@@ -1,1 +1,1 @@
-[["bbands", "middleband"], ["cci", "real"], ["ceil", "real"], ["kama", "real"], ["linearreg", "real"], ["ma", "real"], ["macdfix", "macd"], ["macdfix", "macdsignal"], ["macdfix", "macdhist"], ["mama", "mama"], ["mama", "fama"], ["midprice", "real"], ["min", "real"], ["minindex", "integer"], ["stochf", "fastk"], ["stochrsi", "fastk"], ["trange", "real"], ["trima", "real"], ["typprice", "real"], ["willr", "real"], ["wma", "real"]]
+[["stochf", "fastk"], ["willr", "real"]]

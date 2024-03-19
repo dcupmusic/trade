@@ -1,34 +1,40 @@
 from flask import Flask, request, jsonify
 import torch
 import joblib
+import json
 from lstm_v1_multi import LSTMClassifier
 
 app = Flask(__name__)
 
-model = LSTMClassifier(2, 32, 2, 3)
-model.load_state_dict(torch.load('trained_model_lstm_epoch_5.pth'))
+with open('models/feature_names.json', 'r') as f:
+    feature_names = json.load(f)
+input_dims = len(feature_names)
+
+model = LSTMClassifier(input_dims, 32, 2, 3)
+model.load_state_dict(torch.load('models/trained_model_lstm_epoch_100.pth'))
 model.eval()
 
 # Load the saved scaler parameters
-scaler_params = joblib.load('scaler_params.joblib')
+scaler_params = joblib.load('models/scaler_params.joblib')
 mean = scaler_params['mean']
 scale = scaler_params['scale']
 
 @app.route('/predict', methods=['GET'])
 def predict():
     try:
-        # Extract features from URL parameters
-        # timestamp = float(request.args.get('timestamp'))
-        price = float(request.args.get('price'))
-        rsi = float(request.args.get('rsi'))
+        scaled_features = []
+        
+        for i, feature_name in enumerate(feature_names):
+            # Extract feature value from URL parameters
+            feature_value = float(request.args.get(feature_name))
+            
+            # Scale the feature
+            feature_scaled = (feature_value - mean[i]) / scale[i]
+            
+            # Append the scaled feature to the list
+            scaled_features.append(feature_scaled)
 
-        # Manually scale the features using the loaded scaler parameters
-        # timestamp_scaled = (timestamp - mean[0]) / scale[0]
-        price_scaled = (price - mean[0]) / scale[0]
-        rsi_scaled = (rsi - mean[1]) / scale[1]
-
-        # Prepare the input data as a scaled tensor
-        input_data = torch.tensor([[price_scaled, rsi_scaled]], dtype=torch.float)
+        input_data = torch.tensor([scaled_features], dtype=torch.float)
 
         # Add sequence_length dimension if needed, assuming sequence_length is 1 for simplicity
         input_data = input_data.unsqueeze(0)  # Now input_data should be [1, 1, 3]

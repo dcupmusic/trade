@@ -2,30 +2,26 @@ from flask import Flask, request, jsonify
 import torch
 import joblib
 import json
-from lstm_v1_binary_bigger import BiLSTMClassifierWithAttention
+from lstm_v1_multi import LSTMClassifier
 
 app = Flask(__name__)
 
-coin = 'SOL'
-
-with open(f'models/{coin}_feature_names.json', 'r') as f:
+with open('models/feature_names.json', 'r') as f:
     feature_names = json.load(f)
 input_dims = len(feature_names)
 
-
-model = BiLSTMClassifierWithAttention(input_dims, 32, 2, 1, 0.05)
-model.load_state_dict(torch.load('trained_model_lstm_binary.pth'))
+model = LSTMClassifier(input_dims, 32, 2, 3)
+model.load_state_dict(torch.load('models/trained_model_lstm_epoch_100.pth'))
 model.eval()
 
 # Load the saved scaler parameters
-scaler_params = joblib.load('scaler_params_binary.joblib')
+scaler_params = joblib.load('models/scaler_params.joblib')
 mean = scaler_params['mean']
 scale = scaler_params['scale']
 
 @app.route('/predict', methods=['GET'])
 def predict():
     try:
-
         scaled_features = []
         
         for i, feature_name in enumerate(feature_names):
@@ -42,16 +38,14 @@ def predict():
 
         # Add sequence_length dimension if needed, assuming sequence_length is 1 for simplicity
         input_data = input_data.unsqueeze(0)  # Now input_data should be [1, 1, 3]
-            
+
         with torch.no_grad():
-            logits = model(input_data)  # Model outputs logits
-            probabilities = torch.sigmoid(logits)  # Convert logits to probabilities
-            predicted_class = (probabilities > 0.5).int()  # Classify as 1 if > 0.5 else 0
-            prediction_str = predicted_class.item()  # Convert to Python scalar
+            prediction = model(input_data)
+            _, predicted_class = torch.max(prediction, 1)
+            prediction_str = predicted_class.item()
         
-        output_mapping = {0: 'SignalShort', 1: 'SignalLong'}
+        output_mapping = {0: 'SignalShort', 1: 'SignalNone', 2: 'SignalLong'}
         prediction_str = output_mapping[prediction_str]
-        
         
 
         return jsonify({'prediction': prediction_str})
@@ -60,4 +54,4 @@ def predict():
         return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5010)
+    app.run(debug=True, port=5000)

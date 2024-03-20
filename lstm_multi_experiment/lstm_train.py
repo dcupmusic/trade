@@ -150,7 +150,7 @@ def train_model(x_train, y_train, class_weights_tensor, num_epochs):
 # Main script
 if __name__ == "__main__":
     # Replace 'your_data.csv' with the actual file path
-    coin = 'NEAR'
+    coin = 'ETH'
     
     file_path = f'../data/1y{coin}data1hAllHassInd.csv'
 
@@ -163,8 +163,8 @@ if __name__ == "__main__":
     # dfcopy = data.copy()
     
     window_size = 30
-    timestep = 40
-    short_weight = 1.2
+    timestep = 30
+    short_weight = 1.3
     none_weight = 0
     long_weight = 1
 

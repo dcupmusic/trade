@@ -13,7 +13,7 @@ with open(f'models/{coin}_feature_names.json', 'r') as f:
 input_dims = len(feature_names)
     
 model = BiLSTMClassifierWithAttention(input_dims, 32, 2, 3, 0.1)
-model.load_state_dict(torch.load(f'models/{coin}_trained_model_lstm_300.pth', map_location=torch.device('cpu')))
+model.load_state_dict(torch.load(f'models/{coin}_trained_model_lstm_100.pth', map_location=torch.device('cpu')))
 model.eval()
 
 # Load the saved scaler parameters
